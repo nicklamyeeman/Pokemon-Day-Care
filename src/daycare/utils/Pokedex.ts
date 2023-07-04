@@ -1,5 +1,5 @@
 import { PokemonClient } from "pokenode-ts";
-import { Pokemon } from './Pokemon';
+import { Pokemon } from '../pokemon/Pokemon';
 
 export class Pokedex {
     _pokemonAPI: PokemonClient;
