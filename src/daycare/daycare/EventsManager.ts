@@ -1,4 +1,3 @@
-import { Pokemon } from "../pokemon/Pokemon";
 import { Pokedex } from "../utils/Pokedex";
 
 export class EventsManager {
@@ -13,34 +12,30 @@ export class EventsManager {
     }
 
     getTrainerEventType() {
-        const random = this.rolls();
+        const random = this.rolls(20);
         
-        if (random < 5) {
+        if (random < 1) {
+            return 'removePokemon';
+        }
+        if (random < 2) {
             return 'addPokemon';
         }
-        if (random > 5 && random < 55) {
+        if (random >= 10) {
             return 'newPokemon';
-        }
-        if (random > 55 && random < 60) {
-            return 'removePokemon';
         }
         return 'unknown';
     }
 
     getPokemonEventType() {
-        const random = this.rolls();
+        const random = this.rolls(5);
 
-        if (random < 20) {
+        if (random < 1) {
             return 'addEgg';
         }
         else 'unknown'
     }
 
     rolls(modifier: number = 100) {
-        // chance of a trainer leaves a Pokémon : if no Pokémon : 50%, if at least 1 Pokémon : 10%
-        // chance of a trainer take back his Pokémon : 10%
-        // chance of a Pokémon lays an egg : 10%
-
         return Math.floor(Math.random() * modifier);
     }
 }

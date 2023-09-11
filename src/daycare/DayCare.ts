@@ -2,11 +2,13 @@ import * as vscode from "vscode";
 import { Pokemon } from "./pokemon/Pokemon";
 import { StatsManager } from "./daycare/StatsManager";
 import { EventsManager } from "./daycare/EventsManager";
+import { Trainer, trainersNames } from "./utils/Trainer";
 
 const MAXIMUM_DAY_CARE_CAPACITY = 10;
 
 export class DayCare {
   pokemons: Pokemon[];
+  trainers: Trainer[];
   stats: StatsManager;
   events: EventsManager;
   locale: string;
@@ -16,9 +18,11 @@ export class DayCare {
 
     if (oldDayCare) {
       this.pokemons = oldDayCare.pokemons;
+      this.trainers = oldDayCare.trainers;
       this.stats = new StatsManager(oldDayCare.stats);
     } else {
       this.pokemons = [];
+      this.trainers = [];
       this.stats = new StatsManager();
     }
     this.events = new EventsManager();
@@ -34,10 +38,70 @@ export class DayCare {
       console.log(
         `Pokémon ${index}: ${pokemon.names?.[this.locale]} - exp : ${
           pokemon.experience
-        } - eggGroups : ${pokemon.eggGroups.map((eggGroup) => eggGroup)})} - ${pokemon?.gender || ''}`
+        } - eggGroups : ${pokemon.eggGroups.map((eggGroup) => eggGroup)})} - ${
+          pokemon?.gender || ""
+        }`
       );
     });
-    this.stats.counter.experience += 1;
+    this.stats.counter.experience += 1 * this.pokemons.length;
+  }
+
+  async addPokemon() {
+    console.log("Trainer approching...");
+
+    const availbleTrainersName = trainersNames.filter((trainerName) =>
+      this.trainers.every((trainer) => trainer.name !== trainerName) ||
+      this.trainers.some((trainer) => trainer.name === trainerName && trainer.pokemons.length < 2)
+    );
+    const trainerName = 
+      availbleTrainersName[this.events.rolls(availbleTrainersName.length)];
+    
+    const trainer = this.trainers.find(trainer => trainer.name === trainerName) ?? new Trainer(trainerName);
+
+    const newPokemon = await this.events.addPokemon();
+    const pokemon = new Pokemon(newPokemon);
+
+    console.log(
+      `Trainer ${trainer.name} leaves a ${pokemon.names?.[this.locale]}`
+    );
+
+    this.pokemons.push(pokemon);
+    trainer.addPokemon(pokemon);
+
+    if (!this.trainers.find(trainer => trainer.name === trainerName)) {
+      this.trainers.push(trainer);
+      this.stats.counter.trainer += 1;
+    }
+    this.stats.counter.pokemon += 1;
+  }
+
+  removePokemon() {
+    console.log("Trainer approching...");
+
+    const trainer = this.trainers[this.events.rolls(this.trainers.length)];
+    const pokemon = trainer.pokemons[this.events.rolls(trainer.pokemons.length)];
+
+    console.log(
+      `Trainer ${trainer.name} takes back his ${pokemon.names?.[this.locale]}`
+    );
+
+    this.pokemons = this.pokemons.filter((p) => p !== pokemon);
+    trainer.removePokemon(pokemon);
+  
+    if (trainer.pokemons.length === 0) {
+      this.trainers = this.trainers.filter((t) => t !== trainer);
+    }
+    this.stats.wallet.addMoney(100);
+  }
+
+  addEgg(compatiblePokemons: Pokemon[]) {
+    console.log("Someone is having an egg...");
+
+    const random = this.events.rolls(compatiblePokemons.length);
+    compatiblePokemons[random].hasEgg = true;
+    console.log(`${compatiblePokemons[random].names?.[this.locale]} is now carrying an egg!`)
+
+    this.stats.counter.egg += 1;
   }
 
   async manageTrainersEvents() {
@@ -53,36 +117,19 @@ export class DayCare {
     const isRemovingPokemon = eventType === "removePokemon";
 
     if (canAddPokemon && isAddingPokemon) {
-      console.log("Trainer leaves Pokémon");
-
-      const newPokemon = await this.events.addPokemon();
-      console.log(newPokemon);
-      this.pokemons.push(new Pokemon(newPokemon));
+      await this.addPokemon();
     }
     if (canRemovePokemon && isRemovingPokemon) {
-      console.log("Trainer takes back his Pokémon");
-      this.pokemons.pop();
+      this.removePokemon();
     }
   }
 
   async managePokemonsEvents() {
     const eventType = this.events.getPokemonEventType();
 
-    const canGetEgg =
-      this.pokemons.length > 1 &&
-      this.pokemons.length < MAXIMUM_DAY_CARE_CAPACITY;
-    const isGettingEgg = eventType === "addEgg";
-
-    const compatiblePokemons = this.pokemons.filter(
-      (pokemon) => !pokemon.hasEgg
-    );
-    const hasDitto = Object.values(compatiblePokemons).some(
-      (pokemon) => pokemon.isDitto
-    );
-
-    const eggGroupedPokemons = compatiblePokemons.reduce((acc, pokemon) => {
+    const eggGroupedPokemons = this.pokemons.reduce((acc, pokemon) => {
       pokemon.eggGroups.map((eggGroup) => {
-        if (eggGroup === "no-eggs" || eggGroup === "undiscovered") {
+        if (eggGroup === "no-eggs" || eggGroup === "undiscovered" || eggGroup === "ditto") {
           return;
         }
         if (!acc[eggGroup]) {
@@ -92,44 +139,44 @@ export class DayCare {
       });
       return acc;
     }, {} as { [eggGroup: string]: Pokemon[] });
-    const femalePokemons = Object.values(eggGroupedPokemons)
-      .filter((pokemons) => pokemons.length > 1)
+    
+    let compatiblePokemons = [];
+
+    if (this.pokemons.some((pokemon) => pokemon.isDitto)) {
+      compatiblePokemons = Object.values(eggGroupedPokemons).flat();
+    } else {
+      compatiblePokemons = Object.values(eggGroupedPokemons)
+      .filter(
+        (pokemons) =>
+          pokemons.length > 1 &&
+          pokemons.some((pokemon) => pokemon.gender === "male") &&
+          pokemons.some((pokemon) => pokemon.gender === "female")
+      )
       .flat()
       .filter((pokemon) => pokemon.gender === "female");
-    const dittoPokemons = hasDitto
-      ? Object.values(compatiblePokemons).filter((pokemon) => !pokemon.isDitto)
-      : [];
-    const availablePokemonForEgg = [...femalePokemons, ...dittoPokemons];
+    }
+    compatiblePokemons.filter((pokemon) => !pokemon.hasEgg);
 
-    console.log(availablePokemonForEgg);
-
-    if (canGetEgg && isGettingEgg && availablePokemonForEgg.length > 0) {
-      console.log("Someone is having a baby");
-      const random = this.events.rolls(availablePokemonForEgg.length);
-      availablePokemonForEgg[random].hasEgg = true;
+    if (eventType === "addEgg" && compatiblePokemons.length > 0) {
+      this.addEgg(compatiblePokemons);
     }
   }
 
   async manageEvents() {
-    const random = this.events.rolls();
-
-    if (random < 50) {
+    let random = 0;
+    if (this.pokemons.length > 1) {
+      random = this.events.rolls(2);
+    }
+    if (random < 1) {
       await this.manageTrainersEvents();
     } else {
       await this.managePokemonsEvents();
     }
   }
-  // async catchPokemon() {
-  //   if (this.pokemons.length < MAXIMUM_DAY_CARE_CAPACITY) {
-  //     const pokemon = new Pokemon((await this.events.catchPokemon()).names[4].name);
-  //     this.pokemons.push(pokemon);
-  //     this.stats.counter.pokemon += 1;
-  //     console.log(`Pokémon: ${pokemon.localeName} - exp : ${pokemon.experience}`);
-  //   }
-  // }
 
   async tick() {
     this.addExperience();
     await this.manageEvents();
+    console.log(this.stats.wallet.money);
   }
 }

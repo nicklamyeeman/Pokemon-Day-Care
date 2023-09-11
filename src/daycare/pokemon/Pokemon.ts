@@ -1,4 +1,5 @@
 import { PokemonSpecies } from "pokenode-ts";
+import { Trainer } from "../utils/Trainer";
 
 export class Pokemon {
     names: {[locale: string]: string};

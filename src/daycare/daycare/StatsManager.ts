@@ -27,4 +27,14 @@ export class StatsManager {
             };
         }
     }
+
+    displayStats() {
+        console.log(`Counter of pokémon ${this.counter.pokemon}`)
+        console.log(`Counter of trainer ${this.counter.trainer}`)
+        console.log(`Counter of experience ${this.counter.experience}`)
+        console.log(`Counter of level ${this.counter.level}`)
+        console.log(`Counter of move ${this.counter.move}`)
+        console.log(`Counter of egg ${this.counter.egg}`)
+        
+    }
 }
