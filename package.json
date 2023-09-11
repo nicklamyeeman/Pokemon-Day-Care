@@ -1,5 +1,5 @@
 {
-  "name": "pokemon-day-care",
+  "name": "pokemon-daycare",
   "displayName": "Pokemon Day Care",
   "publisher": "nicklamyeeman",
   "description": "Grows Pokémon while writing lines of code",
@@ -7,7 +7,7 @@
   "keywords": [
     "pokemon",
     "day care",
-    "pokemon day care",
+    "pokemon daycare",
     "level up",
     "tracking"
   ],
@@ -26,10 +26,19 @@
   "contributes": {
     "commands": [
       {
-        "command": "pokemon-day-care.refresh",
+        "command": "pokemon-daycare.refresh",
         "title": "Refresh"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "pokemon-daycare.webview",
+          "name": "Pokémon Daycare"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
