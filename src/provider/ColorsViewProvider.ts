@@ -43,54 +43,45 @@ export class ColorsViewProvider {
     }
   }
   _getHtmlForWebview(webview: Webview) {
+		const scriptUri = webview.asWebviewUri(Uri.joinPath(this._extensionUri, 'src', 'provider', 'script.ts'));
+		const styleUri = webview.asWebviewUri(Uri.joinPath(this._extensionUri, 'src', 'provider', 'style.css'));
+
     const nonce = getNonce();
 
-    return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">				
-				<title>Code Monkey</title>
-			</head>
-			<body>
-				<div style="margin:15px">
-					<img id="monkeyImage" src="https://www.placemonkeys.com/250/175?random" style=" border-radius: 0.5rem; box-shadow: 0 8px 17px 2px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12), 0 5px 5px -3px rgba(0,0,0,.2); margin: 0 auto; display: block;" />
+    return (
+    `<!DOCTYPE html>
+		  <html lang="en">
+			  <head>
+				  <meta charset="UTF-8">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 
-					<div style="text-align:right;">
-						<span id="exp">${this._daycare.stats.counter.experience}</span>
-					</div>
-				</div>
-
-				<script nonce="${nonce}">
-
-				const experience = document.getElementById('exp');
-				const level = document.getElementById('lvl');
-				const monkeyImage = document.getElementById('monkeyImage');
-				const progressbar = document.getElementById('progress');
-				const nextLevel = document.getElementById('nextLevel');
-				let expCount = 0;
-				// Handle the message inside the webview
-				window.addEventListener('message', event => {
-		
-					const message = event.data; // The JSON data our extension sent
-					
-					switch (message.type) {
-						case 'updateExp':
-							console.log(message);
-							experience.textContent = message.exp;	
-							progressbar.style='height:15px;border-radius: 5px; width:'+message.percentage+'%; background-color: #27ae60;'; 
-							if (level.textContent != message.lvl) {
-								level.textContent = message.lvl;
-								nextLevel.textContent = message.nextLevel;
-								monkeyImage.src = "https://www.placemonkeys.com/200/200?random&" + new Date().getTime();
-								
-							}
-							break;
-					}
-				});
-			</script>
-			</body>
-			</html>`;
+  				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+          <link href="${styleUri}" rel="stylesheet" />
+        
+          <title>Pokémon Daycare</title>
+			  </head>
+			  <body>
+        <div class="container">
+        <div class="screen">
+          <div id="spinner" class="spinner"></div>
+          <div id="daycare" class="daycare">
+            <div id="emplacement-1" class="emplacement"></div>
+            <div id="emplacement-2" class="emplacement"></div>
+            <div id="emplacement-3" class="emplacement"></div>
+            <div id="emplacement-4" class="emplacement"></div>
+            <div id="emplacement-5" class="emplacement"></div>
+            <div id="emplacement-6" class="emplacement"></div>
+            <div id="emplacement-7" class="emplacement"></div>
+            <div id="emplacement-8" class="emplacement"></div>
+            <div id="emplacement-9" class="emplacement"></div>
+          </div>
+        </div>
+      </div>
+				  <script nonce="${nonce}" src="${scriptUri}"></script>
+			  </body>
+		  </html>`
+    );
   }
 }
 

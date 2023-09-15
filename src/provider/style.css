@@ -1,0 +1,101 @@
+/* body {
+  margin-left: -20px;
+} */
+
+.container {
+  position: absolute;
+  max-width: 600px;
+  max-height: 600px;
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  place-content: center;
+  border-radius: 3%;
+  aspect-ratio: 1/1;
+  background-color: darkslateblue;
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  width: 90%;
+  height: auto;  
+  display: flex;
+  align-items: center;
+  place-content: center;
+  border-radius: 7%;
+  aspect-ratio: 1/1;
+  background-color: azure;
+}
+
+.daycare {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 1%;
+  width: 100%;
+  height: 100%;
+}
+
+.emplacement {
+  background-color: beige;
+  display: flex;
+  align-items: center;
+  place-content: center;
+  aspect-ratio: 1/1;
+}
+
+.pokemon-img {
+  width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+}
+
+/* Spin Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: none;
+  position: relative;
+  width: 100px;
+  height: auto;
+  aspect-ratio: 1/1;
+  background: linear-gradient(to bottom, rgb(254, 0, 1) 50%, white 50%);
+  border-radius: 50%;
+  border: 8px solid black;
+  animation: spin 1s linear infinite;
+}
+
+.spinner::before {
+  content: "";
+  position: absolute;
+  height: 8px;
+  width: 100px;
+  background: black;
+  top: 50px;
+  transform: translatey(-50%);
+}
+
+.spinner::after {
+  content: "";
+  position: absolute;
+  height: 38px;
+  width: 38px;
+  border-radius: 50%;
+  background: white;
+  top: 50px;
+  left: 50px;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 0 0 8px black, inset 0 0 0 10px white;
+}
+

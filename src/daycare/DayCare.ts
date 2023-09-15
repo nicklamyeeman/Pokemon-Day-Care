@@ -4,7 +4,7 @@ import { StatsManager } from "./daycare/StatsManager";
 import { EventsManager } from "./daycare/EventsManager";
 import { Trainer, trainersNames } from "./utils/Trainer";
 
-const MAXIMUM_DAY_CARE_CAPACITY = 10;
+const MAXIMUM_DAY_CARE_CAPACITY = 9;
 
 export class DayCare {
   pokemons: Pokemon[];
