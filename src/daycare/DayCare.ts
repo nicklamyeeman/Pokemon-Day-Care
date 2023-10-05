@@ -44,6 +44,9 @@ export class DayCare {
       );
     });
     this.stats.counter.experience += 1 * this.pokemons.length;
+    if (this.stats.counter.experience >= 1000 * this.stats.counter.level) {
+      this.stats.counter.level += 1;
+    }
   }
 
   async addPokemon() {

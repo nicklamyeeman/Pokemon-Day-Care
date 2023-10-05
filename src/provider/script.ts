@@ -5,18 +5,23 @@
     const message = event.data;
 
     switch (message.type) {
-      case 'isLoading':
-        const spinner = document.getElementById("spinner");
-        const element = document.getElementById(message.element);
-        if (spinner && element) {
-          spinner.style.display = message.isLoading ? "block" : "none";
-          element.style.display = message.isLoading ? "none" : "block";
-        }
-        break;
       case "updateExp":
-        const experience = document.getElementById("exp");
-        if (experience) {
-          experience.textContent = message.exp;
+        const globalexptext = document.getElementById('globalexptext');
+        if (globalexptext) {
+          globalexptext.textContent = `exp : ${message.exp}`;
+        }
+        const globalleveltext = document.getElementById('globalleveltext');
+        if (globalleveltext) {
+          globalleveltext.textContent = `Niv. ${message.level}`;
+        }
+        const globalmoneytext = document.getElementById('globalmoneytext');
+        if (globalmoneytext) {
+          globalmoneytext.textContent = `${message.money}`;
+        }
+        const globalexpprogress = document.getElementById('globalexpprogress');
+        if (globalexpprogress) {
+          const percent = Math.floor((message.exp - (Math.trunc(message.exp / 1000) * 1000)) / 10)
+          globalexpprogress.style.width = `${percent}%`
         }
         break;
     }
